@@ -33,3 +33,19 @@ For a list of all options, run
 ```
 python train.py --help
 ```
+
+## Run
+
+To run a model that's already trained, run
+
+```
+python run.py --interactive --model_path <MODEL_PATH>
+```
+
+If `model_path` is not specified, it will default to `models/model.pt`.
+
+For a list of all options, run
+
+```
+python run.py --help
+```
