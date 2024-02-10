@@ -9,6 +9,8 @@ from layers.transformer_block import TransformerBlock
 from layers.self_attention import SelfAttention
 from model import Model
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -27,11 +29,16 @@ if __name__ == "__main__":
         raise ValueError("Either input_text or interactive should be set")
 
     model: Model = torch.load(args.model_path)
+    model.transformer.to(device=device)
     if args.interactive:
         while True:
             input_text = input("Enter a Prompt: ")
-            output = model.generate(input_text=input_text, max_len=args.max_len)
+            output = model.generate(
+                input_text=input_text, max_len=args.max_len, device=device
+            )
             print("Model Response:", output, "\n")
     else:
-        output = model.generate(input_text=args.input_text, max_len=args.max_len)
+        output = model.generate(
+            input_text=args.input_text, max_len=args.max_len, device=device
+        )
         print(output)

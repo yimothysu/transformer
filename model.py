@@ -42,7 +42,7 @@ class Model:
         if torch.cuda.device_count() > 1:
             self.transformer = nn.DataParallel(self.transformer)
 
-    def generate(self, input_text: str, max_len: int = 100):
+    def generate(self, input_text: str, max_len: int = 100, device=device):
         tokens = self.tokenizer.encode(input_text)
         for _ in range(max_len):
             probabilities_matrix = self.transformer(
