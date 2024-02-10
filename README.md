@@ -6,7 +6,7 @@ From-scratch PyTorch implementation of transformer from "Attention is All You Ne
 
 Python 3.11
 
-A GPU is recommended for training.
+A GPU is recommended for training, but not at all necessary for inference.
 
 ## Install
 
