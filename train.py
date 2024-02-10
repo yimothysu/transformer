@@ -1,4 +1,5 @@
 import argparse
+from ast import parse
 from dataclasses import dataclass
 import os
 
@@ -76,7 +77,38 @@ if __name__ == "__main__":
         default="outputs",
         help="Directory containing the output",
     )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=default_train_config.batch_size,
+        help="Batch size for training",
+    )
+    parser.add_argument(
+        "--learning_rate",
+        type=float,
+        default=default_train_config.learning_rate,
+        help="Learning rate for training",
+    )
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=default_train_config.epochs,
+        help="Number of epochs",
+    )
+    parser.add_argument(
+        "--block_size",
+        type=int,
+        default=default_train_config.block_size,
+        help="Block size for training",
+    )
     args = parser.parse_args()
+
+    train_config = TrainConfig(
+        batch_size=args.batch_size,
+        learning_rate=args.learning_rate,
+        epochs=args.epochs,
+        block_size=args.block_size,
+    )
 
     print(f"Data directory: {args.data_dir}")
     print(f"Model directory: {args.model_dir}")
@@ -87,20 +119,17 @@ if __name__ == "__main__":
     os.makedirs(args.output_dir, exist_ok=True)
 
     train_ds, test_ds, tokenizer = build_datasets_and_tokenizer(
-        args.data_dir, default_train_config.block_size, device=device
+        args.data_dir, train_config.block_size, device=device
     )
-    model = Model(tokenizer, default_model_config)
+    model = Model(tokenizer, train_config)
     model.transformer.to(device=device)
-    train(model, train_ds, default_train_config)
+    train(model, train_ds, train_config)
     model_save_path = os.path.join(args.model_dir, "model.pt")
     torch.save(model, model_save_path)
     print(f"Model saved to {model_save_path}")
 
     while True:
         input_text = input("Enter a prompt: ")
-        if input_text == "train":
-            train(model, train_ds, default_train_config)
-            continue
         output_text = model.generate(input_text)
         print(f"Completion: {output_text}")
         print()
