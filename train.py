@@ -1,5 +1,4 @@
 import argparse
-from ast import parse
 from dataclasses import dataclass
 import os
 
@@ -25,9 +24,9 @@ class TrainConfig:
 
 
 default_train_config = TrainConfig(
-    batch_size=32,
+    batch_size=2048,
     learning_rate=3e-4,
-    epochs=1,
+    epochs=2,
     block_size=64,
 )
 
@@ -41,24 +40,14 @@ def train(model: Model, dataset: Dataset, config: TrainConfig):
         i = 0
         epoch_loss = 0
         for X, y in tqdm(dataloader):
-            X = X.view(-1, *X.shape[2:])
-            y = y.view(-1)
             optimizer.zero_grad()
             y_pred = model.transformer(X)
-            y_one_hot = 1.0 * (
-                y.unsqueeze(-1)
-                == torch.arange(model.tokenizer.vocab_size)
-                .to(device)
-                .repeat(y.shape[0], 1)
-            )
 
-            loss = loss_fn(y_pred[:, -1, :], y_one_hot)
+            loss = loss_fn(y_pred.permute(0, 2, 1), y)
             loss.backward()
             optimizer.step()
             i += 1
             epoch_loss += loss.item()
-            if i == 1000:
-                break
 
         print(f"Epoch {epoch + 1} / {config.epochs} - Average Loss: {epoch_loss / i}")
 
@@ -121,7 +110,7 @@ if __name__ == "__main__":
     train_ds, test_ds, tokenizer = build_datasets_and_tokenizer(
         args.data_dir, train_config.block_size, device=device
     )
-    model = Model(tokenizer, train_config)
+    model = Model(tokenizer, default_model_config)
     model.transformer.to(device=device)
     train(model, train_ds, train_config)
     model_save_path = os.path.join(args.model_dir, "model.pt")

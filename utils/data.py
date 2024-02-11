@@ -15,15 +15,13 @@ from utils.tokenizer import Tokenizer, build_tokenizer
 class NextTokenDataset(Dataset):
     def __init__(self, tokens: list[int], block_size: int, device: str = "cpu"):
         self.block_size = block_size
-        self.tokens = torch.Tensor(tokens).to(dtype=torch.int, device=device)
+        self.tokens = torch.Tensor(tokens).to(dtype=torch.long, device=device)
 
     def __len__(self):
         return len(self.tokens) - self.block_size + 1
 
     def __getitem__(self, idx):
-        X = torch.tril(
-            self.tokens[idx : idx + self.block_size - 1].repeat(self.block_size - 1, 1)
-        )
+        X = self.tokens[idx : idx + self.block_size - 1]
         y = self.tokens[idx + 1 : idx + self.block_size]
         return X, y
 
