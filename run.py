@@ -28,7 +28,9 @@ if __name__ == "__main__":
     if not args.input_text and not args.interactive:
         raise ValueError("Either input_text or interactive should be set")
 
-    model: Model = torch.load(args.model_path)
+    model: Model = torch.load(args.model_path, map_location=device)
+    # Unwrap nn.DataParallel
+    model.transformer = model.transformer.module
     model.transformer.to(device=device)
     if args.interactive:
         while True:
