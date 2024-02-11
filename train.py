@@ -24,10 +24,10 @@ class TrainConfig:
 
 
 default_train_config = TrainConfig(
-    batch_size=2048,
+    batch_size=1024,
     learning_rate=3e-4,
     epochs=2,
-    block_size=64,
+    block_size=128,
 )
 
 
@@ -90,6 +90,12 @@ if __name__ == "__main__":
         default=default_train_config.block_size,
         help="Block size for training",
     )
+    parser.add_argument(
+        "--from_checkpoint",
+        type=str,
+        default=None,
+        help="Path to a model checkpoint to start training from",
+    )
     args = parser.parse_args()
 
     train_config = TrainConfig(
@@ -110,7 +116,11 @@ if __name__ == "__main__":
     train_ds, test_ds, tokenizer = build_datasets_and_tokenizer(
         args.data_dir, train_config.block_size, device=device
     )
-    model = Model(tokenizer, default_model_config)
+    if args.from_checkpoint:
+        model = torch.load(args.from_checkpoint)
+        assert tokenizer == model.tokenizer, "Tokenizer changed since last checkpoint"
+    else:
+        model = Model(tokenizer, default_model_config)
     model.transformer.to(device=device)
     train(model, train_ds, train_config)
     model_save_path = os.path.join(args.model_dir, "model.pt")

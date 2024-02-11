@@ -24,6 +24,12 @@ class Tokenizer:
     def decode(self, tokens: list[int]) -> str:
         return "".join([self.reverse_tokens_dict[token] for token in tokens])
 
+    def __eq__(self, __value: object) -> bool:
+        return isinstance(__value, Tokenizer) and (
+            self.tokens_dict == __value.tokens_dict
+            and self.reverse_tokens_dict == __value.reverse_tokens_dict
+        )
+
 
 def build_tokenizer(data_dir: str) -> Tokenizer:
     tokenizer = Tokenizer()
